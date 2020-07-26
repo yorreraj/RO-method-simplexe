@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="static/lib/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="static/lib/font-awesome/css/fontawesome-all.min.css">
+    <link rel="stylesheet" href="static/css/style.css">
+</head>
+
+<body ng-app="PLSIMPLEXE" ng-controller="plSimplexeCtrl">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Programmation linéaire</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </nav>
+    <div class="row m-15">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header">Données</div>
+                <div class="card-body">
+                    <span class="badge badge-dark">Contraintes</span>
+                    <div class="input-group mt-3 mb-3" style="width:250px; flex-wrap: nowrap;">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Nombre des variables</span>
+                        </div>
+                        <input type="text" class="form-control" ng-model="nombreVariable"
+                            ng-change="handleChange.nombreVariable()">
+                    </div>
+                    <ul class="list-group" style="flex-direction: row;" ng-repeat="(key, contrainte) in contraintes">
+                        <li class="list-group-item  bg-light">
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-default"
+                                    ng-click="handleClick.removeMember(key)"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-dark" ng-click="handleClick.addMember(key)"><i
+                                        class="fa fa-plus"></i></button>
+                            </div>
+                        </li>
+                        <li class="list-group-item" style="width: 140px;" ng-repeat="member in contrainte.firstMember">
+
+                            <div class="input-group">
+                                <input type="text" class="form-control form-control-sm text-right"
+                                    ng-model="member.value">
+                                <select class="form-control form-control-sm" ng-model="member.variable">
+                                    <option ng-repeat="(key, variable) in variables" value="{{ key+1 }}">{{ variable }}
+                                    </option>
+                                </select>
+                            </div>
+                        </li>
+                        <li class="list-group-item bg-light">
+                            <select class="form-control form-control-sm" ng-model="contrainte.signe">
+                                <option value="-1">≤</option>
+                                <option value="0">=</option>
+                                <option value="1">≥</option>
+                            </select>
+                        </li>
+                        <li class="list-group-item" style="width: 100px;">
+                            <input type="text" class="form-control form-control-sm" ng-model="contrainte.secondMember">
+                        </li>
+                    </ul>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-default btn-sm mt-2"
+                            ng-click="handleClick.removeContrainte()"><i class="fa fa-minus"></i> supprimer
+                            contrainte</button>
+                        <button type="button" class="btn btn-dark btn-sm mt-2" ng-click="handleClick.addContrainte()"><i
+                                class="fa fa-plus"></i> ajouter contrainte</button>
+                    </div>
+
+                    <br>
+                    <span class="badge badge-dark mt-4">Fonction économique Z</span>
+                    <ul class="list-group mt-3" style="flex-direction: row;">
+                        <li class="list-group-item  bg-light">
+                            <select class="form-control form-control-sm" ng-model="fonctionZ.optimisation">
+                                <option value="max">MAX</option>
+                                <option value="min">MIN</option>
+                            </select>
+                        </li>
+                        <li class="list-group-item" style="width: 140px;" ng-repeat="member in fonctionZ.members">
+                            <div class="input-group">
+                                <input type="text" class="form-control form-control-sm text-right"
+                                    ng-model="member.coef">
+                                <select class="form-control form-control-sm" ng-model="member.variable">
+                                    <option ng-repeat="(key, variable) in variables" value="{{ key+1 }}">{{ variable }}
+                                    </option>
+                                </select>
+                            </div>
+                        </li>
+                        <li class="list-group-item bg-light">
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-default" ng-click="handleClick.removeMemberZ()"><i
+                                        class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-dark" ng-click="handleClick.addMemberZ()"><i
+                                        class="fa fa-plus"></i></button>
+                            </div>
+                        </li>
+                    </ul>
+                    <br>
+                    <div ng-show="resultats.xi.length > 0">
+                        <span class="badge badge-success">Résultats</span>
+                        <table class="table table-dark col-sm-4 mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Variables</th>
+                                    <th>Valeur réel</th>
+                                    <th>Valeur approché</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="x in resultats.xi">
+                                    <td><span class="badge badge-success">{{ x.name }}</span></td>
+                                    <td>{{ x.realValue }}</td>
+                                    <td>{{ x.aproachValue }}</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge badge-primary">Z</span></td>
+                                    <td>{{ resultats.z.realValue }}</td>
+                                    <td>{{ resultats.z.aproachValue }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-success"
+                            ng-click="handleClick.resoudre()">Resoudre</button>
+                        <!-- <button type="button" class="btn btn-dark">Suivre la trace de l'algorithme</button> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="static/lib/jquery-3.3.1.slim.min.js"></script>
+    <script src="static/lib/bootstrap/js/bootstrap.min.js"></script>
+    <script src="static/lib/angular-1.7.2/angular.min.js"></script>
+    <script src="node_modules/mathjs/dist/math.js"></script>
+    <script src="matrice.js"></script>
+    <script src="simplexe.js"></script>
+    <script src="static/js/main.js"></script>
+</body>
+
+</html>
